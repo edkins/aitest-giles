@@ -1,0 +1,36 @@
+{
+    "type": "object",
+    "properties": {
+        "prompt_templates": {
+            "type": "array",
+            "item": { "type": "string" }
+        },
+        "maps": {
+            "type": "array",
+            "item": { "type": "string" }
+        },
+        "questions": {
+            "type": "array",
+            "item": {
+                "type": "object",
+                "properties": {
+                    "prompt_template": {"type": "integer" },
+                    "map": {"type": "integer" },
+                    "question": {"type": "string" },
+                    "expected_answer": {"type": "string"},
+                    "response": {"type": "string"},
+                    "params": {
+                        "type": "object",
+                        "properties": {
+                            "model": {"type": "string"},
+                            "temperature": {"type": "float"},
+                            "max_tokens": {"type": "integer"}
+                        }
+                    }
+                },
+                "required": ["prompt_template", "map", "question"]
+            }
+        }
+    },
+    "required": ["prompt_templates", "maps", "questions"]
+}

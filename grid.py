@@ -3,6 +3,7 @@ import json
 import jsonschema
 import os
 import openai
+import random
 import shutil
 from typing import Optional
 
@@ -26,7 +27,24 @@ def main():
         schema = json.load(f)
 
     if args.generate:
+        # See if the file exists and contains valid results
+        old_data_is_valid = False
+        if os.path.exists(filename):
+            with open(filename) as f:
+                old_data = json.load(f)
+            try:
+                jsonschema.validate(instance=old_data, schema=schema)
+                for q in old_data['questions']:
+                    if 'response' in q:
+                        old_data_is_valid = True
+                        break
+            except:
+                pass
+        if old_data_is_valid:
+            raise Exception("File {filename} already exists and contains valid responses. Delete the file manually if you no longer need them.")
+
         quiz = grid_questions.get_quiz()
+
         with open(filename, 'w') as f:
             jsonschema.validate(instance=quiz, schema=schema)
             json.dump(quiz, f, indent=4)
@@ -49,9 +67,12 @@ def ask_questions(filename: str, old_filename: str, model:str, max_tokens:int, t
             jsonschema.validate(instance=data, schema=schema)
         shutil.copyfile(filename, old_filename)
 
-        # Try to find a question that doesn't have a response yet
+        # Try to find a random question that doesn't have a response yet
         found_q = False
-        for q in data['questions']:
+        indices = list(range(len(data['questions'])))
+        random.shuffle(indices)
+        for index in indices:
+            q = data['questions'][index]
             if 'response' not in q and 'params' not in q:
                 print(f"QUESTION: {q['question']}")
                 prompt_template = data['prompt_templates'][q['prompt_template']]

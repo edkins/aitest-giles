@@ -27,10 +27,16 @@ class Map:
                 if answer == None:
                     self.cells[y][x] = '?'
                 else:
-                    self.cells[y][x] = answer[0]
+                    self.cells[y][x] = answer
 
     def __str__(self):
-        return ''.join(''.join(answers) +'\n' for answers in self.cells)
+        lookups = {
+            'wall': '#',
+            'floor': '.',
+            'agent': '@',
+            'goal': '$',
+        }
+        return ''.join(''.join(lookups.get(a,'?') for a in answers) +'\n' for answers in self.cells)
 
 def grade(data, verbosity:int):
     correct = []
@@ -109,12 +115,12 @@ def convert_tile(response: str) -> Optional[str]:
     else:
         stuff = bool(re_wall.search(response)), bool(re_floor.search(response)), bool(re_agent.search(response)), bool(re_goal.search(response))
         if stuff == (True, False, False, False):
-            return '#'
+            return 'wall'
         elif stuff == (False, True, False, False):
-            return '.',
+            return 'floor'
         elif stuff == (False, False, True, False):
-            return '@'
+            return 'agent'
         elif stuff == (False, False, False, True):
-            return '$'
+            return 'goal'
         else:
             return None

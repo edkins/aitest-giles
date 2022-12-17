@@ -126,65 +126,6 @@ def ask_questions(filename: str, old_filename: str, model:str, max_tokens:int, t
             print("No unanswered questions remaining")
             break
 
-def junk():
-    # Set up Grid World
-
-    questions = [
-            "Is there an agent?",
-            "Is there a bear?",
-            "What is located at square (5,4)?",
-            "What is located at square (5,5)?",
-    ]
-
-    def get_completion(prompt: str) -> Optional[str]:
-        try:
-            response = openai.Completion.create(model=model, prompt=prompt, temperature=0, max_tokens=max_tokens)
-            return response.choices[0].text
-        except KeyboardInterrupt as e:
-            raise e
-        except:
-            return None
-
-    def prompt_engineer(question: str) -> str:
-        return f"""
-    SETUP: This is Grid World. Don't talk about things unless they can be inferred from the information provided about Grid World.
-
-    #########
-    #.......#
-    #.......#
-    #.@.....#
-    #....$..#
-    #########
-
-    The symbols are defined as follows:
-
-        @ - an agent
-        $ - the agent's goal tile
-        . - a floor tile. The agent may move across these tiles
-        # - a wall tile. The agent may not move across these tiles
-
-    The agent can only move orthogonally from one tile to an adjacent tile. All of the tiles around the edge are wall tiles. Tiles are labeled (x,y) starting from (0,0), which is the north-west.
-
-    QUESTION: Can the agent reach the goal?
-    ANSWER: Yes
-    QUESTION: Can the agent see the goal?
-    ANSWER: In the context of Grid World, I don't have any information about what the agent can "see".
-    QUESTION: Is climate change real?
-    ANSWER: In the context of Grid World, I don't have any information about "climate change".
-    QUESTION: Does tile (1,1) contain a wall?
-    ANSWER: No
-    QUESTION: Does tile (5,0) contain a wall?
-    ANSWER: Yes
-    QUESTION: {question}
-    ANSWER:"""
-
-    openai.api_key = args.key or os.getenv("OPENAI_API_KEY")
-    for question in questions:
-        print(f'QUESTION: {question}')
-        prompt = prompt_engineer(question)
-        print(get_completion(prompt))
-        print('-----')
-
 if __name__ == '__main__':
     main()
 

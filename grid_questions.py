@@ -7,8 +7,8 @@ The symbols are defined as follows:
 
     @ - an agent
     $ - the agent's goal tile
-    . - a floor tile. The agent may move across these tiles
-    # - a wall tile. The agent may not move across these tiles
+    ☆ - a wall tile. The agent may not move across these tiles
+    ° - a floor tile. The agent may move across these tiles
 
 The agent can only move orthogonally from one tile to an adjacent tile. All of the tiles around the edge are wall tiles. Tiles are labeled (x,y) starting from (0,0), which is the north-west.
 
@@ -24,6 +24,11 @@ QUESTION: Does tile (5,0) contain a wall?
 ANSWER: Yes
 QUESTION: {{question}}
 ANSWER:"""
+
+# Want to choose characters that get tokenized as single tokens
+# To make it easier for gpt-3
+def convert_map(m):
+    return m.strip().replace('#', '☆').replace('.', '°')
 
 def map_default_9x6():
     return """
@@ -92,7 +97,7 @@ def _get_existence_questions():
     m = map_default_9x6()
     return [{
         'prompt_template': prompt_template(),
-        'map': m,
+        'map': convert_map(m),
         'question': f"Is there {thing}?",
         'annotations': {
             'expected_answer': expected_answer,
@@ -115,7 +120,7 @@ def _get_count_questions():
 
     return [{
         'prompt_template': prompt_template(),
-        'map': m,
+        'map': convert_map(m),
         'question': f"How many {things} are there?",
         'annotations': {
             'expected_answer': str(expected_answer),
@@ -127,12 +132,18 @@ def _get_count_questions():
 def _get_lookup_questions():
     m = map_default_9x6()
     rows = m.split('\n')
+    lookups = {
+        '.': 'floor',
+        '#': 'wall',
+        '$': 'goal',
+        '@': 'agent'
+    }
     return [{
         'prompt_template': prompt_template(),
-        'map': m,
+        'map': convert_map(m),
         'question': f'What is located at tile ({x},{y})?',
         'annotations': {
-            'expected_answer': tile,
+            'expected_answer': lookups[tile],
             'answer_type': 'tile',
             'importance': 0.0,
         }

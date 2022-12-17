@@ -37,6 +37,7 @@ def grade(data, verbosity:int):
     incorrect = []
     unparsed = []
     unanswered = []
+    open_questions = []
 
     map0 = Map(9,6)
 
@@ -46,6 +47,8 @@ def grade(data, verbosity:int):
         typ = q['annotations']['answer_type']
         if response == None:
             unanswered.append(question)
+        elif 'expected_answer' not in q['annotations']:
+            open_questions.append((q['prompt_template'], q['map'], question, response))
         else:
             if typ == 'bool':
                 answer = convert_bool(response)
@@ -75,6 +78,9 @@ def grade(data, verbosity:int):
     print('Unparsed', len(unparsed))
     if verbosity >= 1:
         for q,a in unparsed: print('   ', q, a)
+    print('Open questions', len(open_questions))
+    if verbosity >= 1:
+        for p,m,q,a in open_questions: print('   ', p, m, q, a)
     print('Unanswered', len(unanswered))
     print()
     print('Original map:')

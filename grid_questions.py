@@ -10,7 +10,7 @@ The symbols are defined as follows:
     . - a floor tile. The agent may move across these tiles
     # - a wall tile. The agent may not move across these tiles
 
-The agent can only move orthogonally from one tile to an adjacent tile. All of the tiles around the edge are wall tiles. Tiles are labeled (x,y) starting from (0,0), which is the north-west.
+The agent can only move orthogonally from one tile to an adjacent tile. All of the tiles around the edge are wall tiles. Tiles are labeled (x,y) starting from (0,0) which is the north-west up to (8,5) which is the south-east.
 
 QUESTION: Can the agent reach the goal?
 ANSWER: Yes

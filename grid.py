@@ -6,6 +6,7 @@ import openai
 import random
 import shutil
 from typing import Optional
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import grid_questions
 
@@ -27,6 +28,7 @@ def main():
     parser.add_argument('--max-tokens', type=int, default=80, help='The maximum number of tokens to output at a time')
     parser.add_argument('--generate', action='store_true', help='Regenerate questions')
     parser.add_argument('--ask', action='store_true', help='Actually ask the questions. This will call the OpenAI completion API. It will store one answer at a time, so it should be safe to interrupt (?)')
+    parser.add_argument('--serve', action='store_true', help="Run web server for interactive grading of the AI's answers")
     parser.add_argument('--filename', type=str, default='data.json', help='Data filename (default data.json), .old is appended for backup copy')
     args = parser.parse_args()
 
@@ -74,7 +76,57 @@ def main():
     if args.ask:
         ask_questions(filename, f'{filename}.old', model, max_tokens, temperature, schema)
 
+    if args.serve:
+        start_server(filename, schema, port=8000)
+
     print("Done")
+
+def start_server(filename, schema, port):
+    class MyServer(BaseHTTPRequestHandler):
+        def do_GET(self):
+            if self.path == '/':
+                with open('www/index.html','rb') as f:
+                    data = f.read()
+                self.send_response(200)
+                self.send_header("Content-type", "text/html")
+                self.end_headers()
+                self.wfile.write(data)
+            elif self.path == '/api/grid/data':
+                with open(filename) as f:
+                    data = json.load(f)
+                    jsonschema.validate(instance=data, schema=schema)
+                self.send_response(200)
+                self.send_header("Content-type", "application/json")
+                self.end_headers()
+                self.wfile.write(json.dumps(data).encode('utf-8'))
+            else:
+                self.send_response(404)
+                self.end_headers()
+
+        def do_POST(self):
+            if self.path == '/api/grid/data/grading':
+                with open(filename) as f:
+                    data = json.load(f)
+                    jsonschema.validate(instance=data, schema=schema)
+
+                payload = json.loads(self.rfile.read())
+                data['grading'] = payload
+                jsonschema.validate(instance=data, schema=schema)
+                with open(filename, 'w') as f:
+                    json.dump(data, f, indent=4)
+
+            else:
+                self.send_response(404)
+                self.end_headers()
+
+    print(f"Starting server on port {port}")
+    webserver = HTTPServer(("127.0.0.1", port), MyServer)
+    try:
+        webserver.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    webserver.server_close()
+    print("Server stopped.")
     
 def ask_questions(filename: str, old_filename: str, model:str, max_tokens:int, temperature:float, schema):
     # Set up OpenAI session

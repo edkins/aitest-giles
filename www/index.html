@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script>
+"use strict";
+
+let data = undefined;
+
+async function load() {
+    data = await (await fetch('/api/grid/data')).json();
+    console.log(data);
+}
+
+window.onload = load;
+
+</script>
+</head>
+<body>
+Hello stuff
+</body>
+</html>

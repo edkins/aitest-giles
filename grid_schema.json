@@ -39,5 +39,28 @@
             }
         }
     },
+    "grading": {
+        "type": "object",
+        "properties": {
+            "rules": {
+                "type": "array",
+                "item": {
+                    "type": "object",
+                    "properties": {
+                        "rule_type": { "enum": ["exact_match"] },
+                        "exact_match": {
+                            "type": "object",
+                            "properties": {
+                                "answer_type": { "type": "string" },
+                                "exact_response": { "type": "string" },
+                                "mapped_to": { "type": "string" }
+                            }
+                        }
+                    },
+                    "reuqired": "rule_type"
+                }
+            }
+        }
+    },
     "required": ["prompt_templates", "maps", "questions"]
 }

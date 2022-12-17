@@ -34,7 +34,7 @@ def map_default_9x6():
 #....$..#
 #########""".strip()
 
-def get_quiz() -> dict:
+def get_quiz(params:dict) -> dict:
     questions = _get_all_questions()
     prompt_templates = []
     maps = []
@@ -47,6 +47,7 @@ def get_quiz() -> dict:
     for q in questions:
         q['prompt_template'] = prompt_templates.index(q['prompt_template'])
         q['map'] = maps.index(q['map'])
+        q['params'] = params
 
     return {
         'prompt_templates': prompt_templates,
@@ -93,7 +94,11 @@ def _get_existence_questions():
         'prompt_template': prompt_template(),
         'map': m,
         'question': f"Is there {thing}?",
-        'expected_answer': expected_answer,
+        'annotations': {
+            'expected_answer': expected_answer,
+            'answer_type': 'bool',
+            'importance': 0.0,
+        },
     } for thing,expected_answer in things]
 
 def _get_count_questions():
@@ -112,7 +117,11 @@ def _get_count_questions():
         'prompt_template': prompt_template(),
         'map': m,
         'question': f"How many {things} are there?",
-        'expected_answer': str(expected_answer),
+        'annotations': {
+            'expected_answer': str(expected_answer),
+            'answer_type': 'int',
+            'importance': 0.0,
+        },
     } for things,expected_answer in counts]
 
 def _get_lookup_questions():
@@ -122,5 +131,9 @@ def _get_lookup_questions():
         'prompt_template': prompt_template(),
         'map': m,
         'question': f'What is located at tile ({x},{y})?',
-        'expected_answer': tile,
+        'annotations': {
+            'expected_answer': tile,
+            'answer_type': 'tile',
+            'importance': 0.0,
+        }
     } for y,row in enumerate(rows) for x,tile in enumerate(row)]

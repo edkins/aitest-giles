@@ -9,6 +9,15 @@ from typing import Optional
 
 import grid_questions
 
+def get_key(data, q):
+    prompt_template = data['prompt_templates'][q['prompt_template']]
+    m = data['maps'][q['map']]
+    model = q['params']['model']
+    temperature = q['params']['temperature']
+    max_tokens = q['params']['max_tokens']
+    question = q['question']
+    return prompt_template, m, model, temperature, max_tokens, question
+
 def main():
     # Command line argument parsing
 
@@ -26,9 +35,14 @@ def main():
     with open('grid_schema.json') as f:
         schema = json.load(f)
 
+    model = args.model
+    max_tokens = args.max_tokens
+    temperature = 0
+    params = {'model':model, 'max_tokens':max_tokens, 'temperature':temperature}
+
     if args.generate:
         # See if the file exists and contains valid results
-        old_data_is_valid = False
+        old_responses = {}
         if os.path.exists(filename):
             with open(filename) as f:
                 old_data = json.load(f)
@@ -36,21 +50,29 @@ def main():
                 jsonschema.validate(instance=old_data, schema=schema)
                 for q in old_data['questions']:
                     if 'response' in q:
-                        old_data_is_valid = True
-                        break
+                        key = get_key(old_data, q)
+                        if key in old_responses:
+                            raise Exception(f"Unexpected duplicate key {key}")
+                        old_responses[key] = q['response']
             except:
                 pass
-        if old_data_is_valid:
-            raise Exception("File {filename} already exists and contains valid responses. Delete the file manually if you no longer need them.")
 
-        quiz = grid_questions.get_quiz()
+        quiz = grid_questions.get_quiz(params)
+        for q in quiz['questions']:
+            key = get_key(quiz, q)
+            if key in old_responses:
+                q['response'] = old_responses[key]
+                del old_responses[key]
+
+        if len(old_responses) > 0:
+            raise Exception("Some old responses would be deleted. If that is the intention, delete them manually, or delete the entire {filename}.")
 
         with open(filename, 'w') as f:
             jsonschema.validate(instance=quiz, schema=schema)
             json.dump(quiz, f, indent=4)
 
     if args.ask:
-        ask_questions(filename, f'{filename}.old', args.model, args.max_tokens, 0, schema)
+        ask_questions(filename, f'{filename}.old', model, max_tokens, temperature, schema)
 
     print("Done")
     
@@ -73,13 +95,12 @@ def ask_questions(filename: str, old_filename: str, model:str, max_tokens:int, t
         random.shuffle(indices)
         for index in indices:
             q = data['questions'][index]
-            if 'response' not in q and 'params' not in q:
+            if 'response' not in q:
                 print(f"QUESTION: {q['question']}")
                 prompt_template = data['prompt_templates'][q['prompt_template']]
                 m = data['maps'][q['map']]
                 prompt = prompt_template.replace('{map}', m).replace('{question}', q['question'])
                 completion = openai.Completion.create(model=model, prompt=prompt, temperature=temperature, max_tokens=max_tokens)
-                q['params'] = {'model':model, 'max_tokens':max_tokens, 'temperature':temperature}
                 q['response'] = completion.choices[0].text
                 found_q = True
 

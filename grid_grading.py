@@ -21,8 +21,8 @@ class Map:
     def set(self, question, answer):
         m = re_q_tile.match(question)
         if m:
-            x = int(m.group(1))
-            y = int(m.group(2))
+            x = int(m.group(1)) - 1
+            y = int(m.group(2)) - 1
             if x >= 0 and x < self.w and y >= 0 and y < self.h:
                 if answer == None:
                     self.cells[y][x] = '?'

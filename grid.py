@@ -95,6 +95,8 @@ def ask_questions(filename: str, old_filename: str, model:str, max_tokens:int, t
         random.shuffle(indices)
         for index in indices:
             q = data['questions'][index]
+            if q['params']['model'] != model or q['params']['max_tokens'] != max_tokens or q['params']['temperature'] != temperature:
+                raise Exception(f"Wrong params in question")
             if 'response' not in q:
                 print(f"QUESTION: {q['question']}")
                 prompt_template = data['prompt_templates'][q['prompt_template']]

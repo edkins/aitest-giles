@@ -109,7 +109,7 @@ def _get_count_questions():
         ('wall tiles', sum(1 if x=='#' else 0 for x in m)),
         ('floor tiles', sum(1 if x=='.' else 0 for x in m)),
         ('tomatoes', 'undefined'),
-        ('mistakes in the description of Grid World', 'unknown'),
+        ('mistakes in the description of Grid World', 'undefined'),
         ('tiles in total', sum(1 if x!='\n' else 0 for x in m)),
     ]
 

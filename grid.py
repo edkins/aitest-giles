@@ -8,6 +8,7 @@ import shutil
 from typing import Optional
 
 import grid_questions
+import grid_grading
 
 def get_key(data, q):
     prompt_template = data['prompt_templates'][q['prompt_template']]
@@ -27,7 +28,9 @@ def main():
     parser.add_argument('--max-tokens', type=int, default=80, help='The maximum number of tokens to output at a time')
     parser.add_argument('--generate', action='store_true', help='Regenerate questions')
     parser.add_argument('--ask', action='store_true', help='Actually ask the questions. This will call the OpenAI completion API. It will store one answer at a time, so it should be safe to interrupt (?)')
+    parser.add_argument('--grade', action='store_true', help="Grade AI's answers")
     parser.add_argument('--filename', type=str, default='data.json', help='Data filename (default data.json), .old is appended for backup copy')
+    parser.add_argument('-v', action='count', default=0, help='Make more verbose')
     args = parser.parse_args()
 
     filename = args.filename
@@ -73,6 +76,12 @@ def main():
 
     if args.ask:
         ask_questions(filename, f'{filename}.old', model, max_tokens, temperature, schema)
+
+    if args.grade:
+        with open(filename) as f:
+            data = json.load(f)
+            jsonschema.validate(instance=data, schema=schema)
+            grid_grading.grade(data, args.v)
 
     print("Done")
     

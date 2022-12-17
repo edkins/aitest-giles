@@ -10,7 +10,7 @@ The symbols are defined as follows:
     . - a floor tile. The agent may move across these tiles
     # - a wall tile. The agent may not move across these tiles
 
-The agent can only move orthogonally from one tile to an adjacent tile.  Tiles are labeled (x,y) starting from (1,1) which is the north-west up to (9,6) which is the south-east.
+The agent can only move orthogonally from one tile to an adjacent tile. Tiles are labeled (x,y) starting from (1,1) which is the north-west up to (9,6) which is the south-east.
 
 QUESTION: Can the agent reach the goal?
 ANSWER: Yes
@@ -19,9 +19,9 @@ ANSWER: In the context of Grid World, I don't have any information about what th
 QUESTION: Is climate change real?
 ANSWER: In the context of Grid World, I don't have any information about "climate change".
 QUESTION: Does tile (2,2) contain a wall?
-ANSWER: No
-QUESTION: Does tile (6,1) contain a wall?
 ANSWER: Yes
+QUESTION: Does tile (6,1) contain a wall?
+ANSWER: No
 QUESTION: {{question}}
 ANSWER:"""
 
@@ -38,7 +38,7 @@ The symbols are defined as follows:
     # - a wall tile. The agent may not move across these tiles
     ^ - a giant pit of flames
 
-The agent can only move orthogonally from one tile to an adjacent tile. All of the tiles around the edge are wall tiles. Tiles are labeled (x,y) starting from (1,1) which is the north-west up to (9,6) which is the south-east.
+The agent can only move orthogonally from one tile to an adjacent tile. Tiles are labeled (x,y) starting from (1,1) which is the north-west up to (9,6) which is the south-east.
 
 QUESTION: Can the agent reach the goal?
 ANSWER: Yes
@@ -47,30 +47,30 @@ ANSWER: In the context of Grid World, I don't have any information about what th
 QUESTION: Is climate change real?
 ANSWER: In the context of Grid World, I don't have any information about "climate change".
 QUESTION: Does tile (2,2) contain a wall?
-ANSWER: No
-QUESTION: Does tile (6,1) contain a wall?
 ANSWER: Yes
+QUESTION: Does tile (6,1) contain a wall?
+ANSWER: No
 QUESTION: {{question}}
 ANSWER:"""
 
 
 def map_default_9x6():
     return """
-#########
-#.......#
-#.......#
-#.@.....#
-#....$..#
-#########""".strip()
+#.#.....#
+.##.###..
+###.##.#.
+.#@..#...
+...#.$..#
+#.#..#..#""".strip()
 
 def map_flames_9x6():
     return """
-#########
-#..^....#
-#.......#
-#.@.....#
-#....$..#
-#########""".strip()
+#.#.....#
+.##^###..
+###.##.#.
+.#@..#...
+...#.$..#
+#.#..#..#""".strip()
 
 def get_quiz(params:dict) -> dict:
     questions = _get_all_questions()

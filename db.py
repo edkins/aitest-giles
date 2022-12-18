@@ -11,11 +11,13 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 max_tokens = 60
 model = 'text-davinci-003'
 
+re_list_animals = re.compile(r'^list_animals\(\)$')
 re_list_people = re.compile(r'^list_people\(\)$')
 re_age = re.compile(r'^age\(([a-z]+)\)$')
 re_the_answer_is = re.compile(r'^the_answer_is\((.*)\)$')
 re_comment = re.compile(r'\{.*?\}')
 re_older = re.compile(r'^is_older\(([a-z]+), *([a-z]+)\)$')
+re_more_legs = re.compile(r'^has_more_legs\(([a-z]+), *([a-z]+)\)$')
 
 initial_prompt = """
 This is a transcript of a number of sessions between an intelligent user and a database, where the user must infer the answer to the question from the information in the database. Where relevant, the user writes down their thought processes in curly brackets.
@@ -82,6 +84,23 @@ class AgeComparisonDb:
             if m[2] not in self.ages:
                 return f'ERROR: no such person: {m[2]}'
             return str(self.ages[m[1]] > self.ages[m[2]]).lower()
+        return f'ERROR: unknown command or syntax error'
+
+class LegsComparisonDb:
+    def __init__(self, **legs):
+        self.legs = legs
+
+    def query(self, q: str) -> str:
+        m = re_list_animals.match(q)
+        if m:
+            return ', '.join(self.legs.keys())
+        m = re_more_legs.match(q)
+        if m:
+            if m[1] not in self.legs:
+                return f'ERROR: no such animal: {m[1]}'
+            if m[2] not in self.legs:
+                return f'ERROR: no such animal: {m[2]}'
+            return str(self.legs[m[1]] > self.legs[m[2]]).lower()
         return f'ERROR: unknown command or syntax error'
 
 class FinishedSession:
@@ -201,6 +220,18 @@ def main():
                 #AgeComparisonDb(alice = 55, bob = 55),     # not sure if two people being the exact same age is a valid test case
             ],
             answers = ['alice', 'bob', 'unknown'],
+            max_interactions = 5
+        )
+    elif theme == 'legs_comparison':
+        multi_session(
+            theme = theme,
+            question = "Which animal has the most legs? Available commands: list_animals(), has_more_legs(Animal, Animal), the_answer_is(Animal_or_Unknown).",
+            dbs = [
+                LegsComparisonDb(pratchett = 4, scuttle = 8),
+                LegsComparisonDb(pratchett = 4, scuttle = 2),
+                LegsComparisonDb(pratchett = 8, scuttle = 8),
+            ],
+            answers = ['scuttle', 'pratchett', 'unknown'],
             max_interactions = 5
         )
     else:

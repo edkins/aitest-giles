@@ -3,6 +3,7 @@ import html
 import openai
 import os
 import re
+import sys
 from typing import Optional
 
 os.makedirs('auto_transcripts', exist_ok=True)
@@ -14,6 +15,7 @@ re_list_people = re.compile(r'^list_people\(\)$')
 re_age = re.compile(r'^age\(([a-z]+)\)$')
 re_the_answer_is = re.compile(r'^the_answer_is\((.*)\)$')
 re_comment = re.compile(r'\{.*?\}')
+re_older = re.compile(r'^is_older\(([a-z]+), *([a-z]+)\)$')
 
 initial_prompt = """
 This is a transcript of a number of sessions between an intelligent user and a database, where the user must infer the answer to the question from the information in the database. Where relevant, the user writes down their thought processes in curly brackets.
@@ -53,8 +55,8 @@ def strip_comments(text):
     return re_comment.sub('', text).strip()
 
 class AgeDb:
-    def __init__(self, **kwargs):
-        self.ages = kwargs
+    def __init__(self, **ages):
+        self.ages = ages
 
     def query(self, q: str) -> str:
         m = re_list_people.match(q)
@@ -63,6 +65,23 @@ class AgeDb:
         m = re_age.match(q)
         if m:
             return str(self.ages.get(m[1], f'ERROR: no such person: {m[1]}'))
+        return f'ERROR: unknown command or syntax error'
+
+class AgeComparisonDb:
+    def __init__(self, **ages):
+        self.ages = ages
+
+    def query(self, q: str) -> str:
+        m = re_list_people.match(q)
+        if m:
+            return ', '.join(self.ages.keys())
+        m = re_older.match(q)
+        if m:
+            if m[1] not in self.ages:
+                return f'ERROR: no such person: {m[1]}'
+            if m[2] not in self.ages:
+                return f'ERROR: no such person: {m[2]}'
+            return str(self.ages[m[1]] > self.ages[m[2]]).lower()
         return f'ERROR: unknown command or syntax error'
 
 class FinishedSession:
@@ -159,17 +178,33 @@ def multi_session(theme: str, question: str, dbs: list, answers: list[str], max_
     print('Done')
 
 def main():
-    multi_session(
-        theme = 'age_comparison_two_people',
-        question = "Who is the youngest?",
-        dbs = [
-            AgeDb(alice = 63, bob = 46),
-            AgeDb(alice = 37, bob = 91),
-            AgeDb(alice = 55, bob = 55),
-        ],
-        answers = ['bob', 'alice', 'unknown'],
-        max_interactions = 5
-    )
+    theme = sys.argv[1]
+    if theme == 'age_values_two_people':
+        multi_session(
+            theme = theme,
+            question = "Who is the youngest? Available commands: list_people(), age(Person), the_answer_is(Person_or_Unknown).",
+            dbs = [
+                AgeDb(alice = 63, bob = 46),
+                AgeDb(alice = 37, bob = 91),
+                AgeDb(alice = 55, bob = 55),
+            ],
+            answers = ['bob', 'alice', 'unknown'],
+            max_interactions = 5
+        )
+    elif theme == 'age_comparison_two_people':
+        multi_session(
+            theme = theme,
+            question = "Who is the oldest? Available commands: list_people(), is_older(Person, Person), the_answer_is(Person_or_Unknown).",
+            dbs = [
+                AgeComparisonDb(alice = 63, bob = 46),
+                AgeComparisonDb(alice = 37, bob = 91),
+                #AgeComparisonDb(alice = 55, bob = 55),     # not sure if two people being the exact same age is a valid test case
+            ],
+            answers = ['alice', 'bob', 'unknown'],
+            max_interactions = 5
+        )
+    else:
+        print(f"Unrecognized theme {theme}")
 
 if __name__ == '__main__':
     main()

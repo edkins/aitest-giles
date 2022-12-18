@@ -11,18 +11,18 @@ max_tokens = 30
 model = 'text-davinci-003'
 
 prompt = """
-This is a transcript of a number of sessions between an intelligent user and a database. The user will only infer facts from what they have learned from the database.
+This is a transcript of a number of sessions between an intelligent user and a database. The database has a natural language interface but can only answer about individual facts.
 
 SESSION 1
 
-Database: Who is the oldest? Available commands: list_people(), age(Person), the_answer_is(Person).
-User: list_people()
-Database: alice, bob
-User: age(alice)
+Database: Who is the oldest?
+User: List the people
+Database: Alice, Bob
+User: How old is Alice?
 Database: 39
-User: age(bob)
+User: How old is Bob?
 Database: 37
-User: the_answer_is(alice)
+User: The answer is Alice.
 
 SESSION 2
 

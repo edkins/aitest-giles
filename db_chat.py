@@ -11,7 +11,7 @@ max_tokens = 30
 model = 'text-davinci-003'
 
 prompt = """
-This is a transcript of a number of sessions between an intelligent user and a database. The user will only infer facts from what they have learned from the database.
+This is a transcript of a number of sessions between an intelligent user and a database, where the user must infer the answer to the question from the information in the database.
 
 SESSION 1
 
@@ -25,6 +25,17 @@ Database: 37
 User: the_answer_is(alice)
 
 SESSION 2
+
+Database: Does alice like anything in the kitchen? Available commands: list_people(), list_kitchen_contents(), age(Person), likes(Person, Food), the_answer_is(Bool).
+User: list_kitchen_contents()
+Database: cheese, ketchup
+User: likes(alice, cheese)
+Database: unknown
+User: likes(alice, ketchup)
+Database: true
+User: the_answer_is(true)
+
+SESSION 3
 
 """
 

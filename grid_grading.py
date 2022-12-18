@@ -117,7 +117,7 @@ def convert_tile(response: str) -> Optional[str]:
         if stuff == (True, False, False, False):
             return '#'
         elif stuff == (False, True, False, False):
-            return '.',
+            return '.'
         elif stuff == (False, False, True, False):
             return '@'
         elif stuff == (False, False, False, True):
